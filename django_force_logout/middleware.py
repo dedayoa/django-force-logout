@@ -1,4 +1,5 @@
 import time
+import pytz
 import datetime
 
 from django.contrib import auth
@@ -32,14 +33,15 @@ class ForceLogoutMiddleware(MiddlewareMixin):
             return
 
         try:
-            timestamp = datetime.datetime.utcfromtimestamp(
+            timestamp = datetime.datetime.fromtimestamp(
                 request.session[self.SESSION_KEY],
+                pytz.utc
             )
         except KeyError:
             # May not have logged in since we started populating this key.
             return
 
-        if timestamp > user_timestamp:
+        if timestamp < user_timestamp:
             return
 
         auth.logout(request)
